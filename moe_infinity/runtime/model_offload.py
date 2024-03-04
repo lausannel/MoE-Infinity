@@ -5,6 +5,7 @@
 
 import gc
 import os
+import psutil
 import numpy as np
 import math
 import torch.distributed as dist
@@ -370,19 +371,35 @@ class OffloadEngine(object):
                     for ckpt in tqdm(
                         self.ckpt_files, desc="Loading checkpoint files", smoothing=0
                     ):
+                        process = psutil.Process(os.getpid())
                         state_dict = {}
+                        print("offloading safe tensors ...")
                         if "safetensors" in ckpt:
                             with safe_open(ckpt, "pt") as f:
                                 for k in f.keys():
-                                    state_dict[k] = f.get_tensor(k)
+                                    params = f.get_tensor(k)
+                                    params = params.to(self.dtype).to("cpu")
+                                    memory_usage_in_MB = process.memory_info().rss / 1024 / 1024
+                                    print(f"after loading {k}, memory usage: {memory_usage_in_MB} MB")
+                                    self.name_id_map[k] = self._generate_param_id()
+                                    if not self.archer_engine.is_tensor_offloaded(self.name_id_map[k]):
+                                        self.archer_engine.offload(
+                                            params, self.name_id_map[k]
+                                        )
+                                    # to reduce memory usage
+                                    del params
+                                    gc.collect()
+                                    torch.cuda.empty_cache()
+                                    memory_usage_in_MB = process.memory_info().rss / 1024 / 1024
+                                    print(f"after offloading {k}, memory usage: {memory_usage_in_MB} MB")
                         else:
-                            state_dict = torch.load(ckpt)
+                            state_dict = torch.load(ckpt, map_location=torch.device("cpu"))
 
-                        # convert all tensors in state_dict to self.dtype
-                        for k, v in state_dict.items():
-                            state_dict[k] = v.to(self.dtype)
+                            # convert all tensors in state_dict to self.dtype
+                            for k, v in state_dict.items():
+                                state_dict[k] = v.to(self.dtype)
 
-                        self._offload_state_dict(state_dict, empty_state_dict)
+                            self._offload_state_dict(state_dict, empty_state_dict)
 
                         # print("Loading ckpt file", ckpt, flush=True)
 
