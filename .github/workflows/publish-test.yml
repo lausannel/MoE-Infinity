@@ -51,7 +51,7 @@ jobs:
 
       - name: Test last stage variables
         run: |
-          echo "version=${{ needs.setup-version.outputs.version }}"
+          echo "version=${{ env.version }}"
 
       - name: Free disk space
         run: |
