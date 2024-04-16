@@ -56,7 +56,7 @@ jobs:
       - name: Download shared value artifact
         uses: actions/download-artifact@v2
         with:
-            name: shared-value
+            name: version
             path: artifact
 
       - name: Test last stage variables
