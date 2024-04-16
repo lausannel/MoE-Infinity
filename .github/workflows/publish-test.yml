@@ -18,15 +18,13 @@ permissions:
 jobs:
   setup-version:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.set_version.outputs.version }}
     steps:
       - name: Generate version number
         id: set_version
         run: |
           VERSION_HASH=$(echo $(date +%s%N) | md5sum | head -c 8)
           echo "Generated version hash: $VERSION_HASH"
-          echo "version=$VERSION_HASH" >> $GITHUB_ENV
+          echo "version=$VERSION_HASH" >> $GITHUB_OUTPUT
 
   wheel:
     name: Build Wheel
@@ -48,10 +46,10 @@ jobs:
     #     if: ${{ runner.os == 'Linux' }}
     #     run: |
     #       bash -x .github/workflows/scripts/env.sh
-
+    # https://github.com/orgs/community/discussions/26313
       - name: Test last stage variables
         run: |
-          echo "version=${{ env.version }}"
+          echo "version=${{ steps.set_version.outputs.version }}"
 
       - name: Free disk space
         run: |
