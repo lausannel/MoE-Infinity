@@ -61,6 +61,7 @@ jobs:
 
       - name: Test last stage variables
         run: |
+          cat artifact/version.txt
           echo "version=$(cat artifact/version.txt)" >> $GITHUB_ENV
           echo "version is ${{ env.version }}"
 
