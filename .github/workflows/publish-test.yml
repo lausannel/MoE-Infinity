@@ -22,7 +22,7 @@ jobs:
     steps:
     - name: Generate version number
       run: |
-        VERSION_HASH=$(echo $(date +%s%N) | md5sum | head -c 8)
+        VERSION_HASH=$(date +"%Y%m%d%H%M%S")
         echo "Generated version hash: $VERSION_HASH"
         echo $VERSION_HASH > version.txt
     
