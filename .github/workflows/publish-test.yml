@@ -52,21 +52,16 @@ jobs:
     #     if: ${{ runner.os == 'Linux' }}
     #     run: |
     #       bash -x .github/workflows/scripts/env.sh
+
     # https://github.com/orgs/community/discussions/26313
-      - name: Download shared value artifact
+      - name: Download version value artifact
         uses: actions/download-artifact@v2
         with:
             name: version
             path: artifact
 
-      - name: Test last stage variables
-        run: |
-          cat artifact/version.txt
-          echo "publish_version=$(cat artifact/version.txt)" >> $GITHUB_ENV
-
       - name: Free disk space
         run: |
-          echo "version is ${{ env.publish_version }}"
           sudo rm -rf /usr/local/cuda-* /opt/cuda
           sudo rm -rf /usr/local/cuda
           bash -x .github/workflows/scripts/free-disk-space.sh
@@ -87,7 +82,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install build
-          MOEINF_VERSION=0.0.1dev${{ env.publish_version }} BUILD_OPS=1 python -m build --wheel
+          VERSION_HASH=$(cat artifact/version.txt)
+          MOEINF_VERSION=0.0.1dev${VERSION_HASH} BUILD_OPS=1 python -m build --wheel
           wheel_name=$(ls dist/*whl | xargs -n 1 basename)
           asset_name=${wheel_name//"linux"/"manylinux1"}
           echo "wheel_name=${wheel_name}" >> $GITHUB_ENV
@@ -98,7 +94,8 @@ jobs:
       - name: Build Source
         if: ${{ matrix.python-version == '3.8' }}
         run: |
-          MOEINF_VERSION=0.0.1dev${{ env.publish_version }} python -m build --sdist
+          VERSION_HASH=$(cat artifact/version.txt)
+          MOEINF_VERSION=0.0.1dev${VERSION_HASH} python -m build --sdist
 
       - name: Rename wheel
         run: |
