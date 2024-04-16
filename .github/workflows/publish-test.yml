@@ -24,7 +24,7 @@ jobs:
         run: |
           VERSION_HASH=$(echo $(date +%s%N) | md5sum | head -c 8)
           echo "Generated version hash: $VERSION_HASH"
-          echo "version=$VERSION_HASH" >> $GITHUB_OUTPUT
+          echo "version=$VERSION_HASH" >> "$GITHUB_OUTPUT"
 
   wheel:
     name: Build Wheel
