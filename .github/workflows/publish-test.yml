@@ -48,6 +48,10 @@ jobs:
     #     run: |
     #       bash -x .github/workflows/scripts/env.sh
 
+      - name: Test last stage variables
+        run: |
+          echo "version=${{ needs.setup-version.outputs.version }}"
+
       - name: Free disk space
         run: |
           sudo rm -rf /usr/local/cuda-* /opt/cuda
