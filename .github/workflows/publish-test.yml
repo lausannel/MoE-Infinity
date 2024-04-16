@@ -62,11 +62,12 @@ jobs:
       - name: Test last stage variables
         run: |
           cat artifact/version.txt
-          echo "version=$(cat artifact/version.txt)" >> $GITHUB_ENV
-          echo "version is ${{ env.version }}"
+          echo "publish_version=$(cat artifact/version.txt)" >> $GITHUB_ENV
+          echo "version is ${{ env.publish_version }}"
 
       - name: Free disk space
         run: |
+          echo "version is ${{ env.publish_version }}"
           sudo rm -rf /usr/local/cuda-* /opt/cuda
           sudo rm -rf /usr/local/cuda
           bash -x .github/workflows/scripts/free-disk-space.sh
