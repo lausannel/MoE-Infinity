@@ -24,9 +24,10 @@ jobs:
       - name: Generate version number
         id: set_version
         run: |
-            VERSION_HASH=$(echo $(date +%s%N) | md5sum | head -c 8)
-            echo "Generated version hash: $VERSION_HASH"
-            echo "::set-output name=version::$VERSION_HASH"
+          VERSION_HASH=$(echo $(date +%s%N) | md5sum | head -c 8)
+          echo "Generated version hash: $VERSION_HASH"
+          echo "version=$VERSION_HASH" >> $GITHUB_ENV
+
   wheel:
     name: Build Wheel
     runs-on: ${{ matrix.os }}
